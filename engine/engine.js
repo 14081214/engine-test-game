@@ -1,8 +1,13 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var engine;
 (function (engine) {
     var Point = (function () {
@@ -130,9 +135,22 @@ var engine;
             return Ticker.instance;
         };
         Ticker.prototype.register = function (listener) {
-            this.listeners.push(listener);
+            var x = this.listeners.indexOf(listener);
+            if (x < 0) {
+                this.listeners.push(listener);
+            }
+            else {
+                console.log("already listen");
+            }
         };
         Ticker.prototype.unregister = function (listener) {
+            var x = this.listeners.indexOf(listener);
+            if (x >= 0) {
+                this.listeners.splice(x, 1);
+            }
+            else {
+                console.log("no listener");
+            }
         };
         Ticker.prototype.notify = function (deltaTime) {
             for (var _i = 0, _a = this.listeners; _i < _a.length; _i++) {
@@ -144,11 +162,134 @@ var engine;
     }());
     engine.Ticker = Ticker;
 })(engine || (engine = {}));
+var imageJason = [
+    { id: "ACCEPTABLE.png", width: 100, height: 100 },
+    { id: "buttonAccept.png", width: 100, height: 100 },
+    { id: "buttonFinish.png", width: 100, height: 100 },
+    { id: "CAN_SUBMIT.png", width: 100, height: 100 },
+    { id: "close.png", width: 100, height: 100 },
+    { id: "d1.png", width: 100, height: 100 },
+    { id: "d2.png", width: 100, height: 100 },
+    { id: "d3.png", width: 100, height: 100 },
+    { id: "d4.png", width: 100, height: 100 },
+    { id: "dialog.jpg", width: 100, height: 100 },
+    { id: "DURING.png", width: 100, height: 100 },
+    { id: "f1.png", width: 100, height: 100 },
+    { id: "f2.png", width: 100, height: 100 },
+    { id: "f3.png", width: 100, height: 100 },
+    { id: "f4.png", width: 100, height: 100 },
+    { id: "heroButton.png", width: 100, height: 100 },
+    { id: "heroDetails.jpg", width: 100, height: 100 },
+    { id: "i1.png", width: 100, height: 100 },
+    { id: "i2.png", width: 100, height: 100 },
+    { id: "i3.png", width: 100, height: 100 },
+    { id: "i4.png", width: 100, height: 100 },
+    { id: "i5.png", width: 100, height: 100 },
+    { id: "l1.png", width: 100, height: 100 },
+    { id: "l2.png", width: 100, height: 100 },
+    { id: "l3.png", width: 100, height: 100 },
+    { id: "l4.png", width: 100, height: 100 },
+    { id: "mask.png", width: 100, height: 100 },
+    { id: "monster.png", width: 100, height: 100 },
+    { id: "npc_0.png", width: 100, height: 100 },
+    { id: "npc_1.png", width: 100, height: 100 },
+    { id: "path.jpg", width: 100, height: 100 },
+    { id: "pig.png", width: 100, height: 100 },
+    { id: "r1.png", width: 100, height: 100 },
+    { id: "r2.png", width: 100, height: 100 },
+    { id: "r3.png", width: 100, height: 100 },
+    { id: "r4.png", width: 100, height: 100 },
+    { id: "taskButton.png", width: 100, height: 100 },
+    { id: "taskPanel.jpg", width: 100, height: 100 },
+    { id: "u1.png", width: 100, height: 100 },
+    { id: "u2.png", width: 100, height: 100 },
+    { id: "u3.png", width: 100, height: 100 },
+    { id: "u4.png", width: 100, height: 100 },
+    { id: "w1.jpg", width: 100, height: 100 },
+    { id: "w2.jpg", width: 100, height: 100 },
+    { id: "w3.jpg", width: 100, height: 100 },
+    { id: "w4.jpg", width: 100, height: 100 },
+    { id: "wall.jpg", width: 100, height: 100 },
+];
 var engine;
 (function (engine) {
+    var ImageResource = (function () {
+        function ImageResource(id, width, height) {
+            this.id = id;
+            this.width = width;
+            this.height = height;
+        }
+        return ImageResource;
+    }());
+    engine.ImageResource = ImageResource;
+    var Resourse = (function () {
+        function Resourse() {
+            ;
+        }
+        Resourse.getInstance = function () {
+            if (Resourse.Res == null) {
+                Resourse.Res = new Resourse();
+                Resourse.Res.resourses = new Array();
+                return Resourse.Res;
+            }
+            else {
+                return Resourse.Res;
+            }
+        };
+        Resourse.prototype.getRes = function (id) {
+            if (id.match("null")) {
+                console.log("not find " + id + " in imageJason"); //此处可替换为“若没有该id，则添加至resource数组”
+                return null;
+            }
+            for (var i = 0; i < this.resourses.length; i++) {
+                if (this.resourses[i].id.match(id)) {
+                    return this.resourses[i];
+                }
+            }
+        };
+        Resourse.prototype.initial = function () {
+            var _this = this;
+            imageJason.forEach(function (x) {
+                var y = new ImageResource(x.id, x.width, x.height);
+                _this.resourses.push(y);
+            });
+        };
+        return Resourse;
+    }());
+    engine.Resourse = Resourse;
+})(engine || (engine = {}));
+var engine;
+(function (engine) {
+    var EventManager = (function () {
+        function EventManager() {
+        }
+        EventManager.getInstance = function () {
+            if (EventManager.eventManager == null) {
+                EventManager.eventManager = new EventManager();
+                EventManager.eventManager.targetArray = new Array();
+                return EventManager.eventManager;
+            }
+            else {
+                return EventManager.eventManager;
+            }
+        };
+        return EventManager;
+    }());
+    engine.EventManager = EventManager;
+    var MyEvent = (function () {
+        function MyEvent(eventType, func, target, ifCapture) {
+            this.eventType = "";
+            this.ifCapture = false;
+            this.eventType = eventType;
+            this.ifCapture = ifCapture;
+            this.func = func;
+            this.target = target;
+        }
+        return MyEvent;
+    }());
+    engine.MyEvent = MyEvent;
     var DisplayObject = (function () {
         function DisplayObject(type) {
-            this.type = "DisplayObject";
             this.x = 0;
             this.y = 0;
             this.scaleX = 1;
@@ -156,11 +297,11 @@ var engine;
             this.rotation = 0;
             this.alpha = 1;
             this.globalAlpha = 1;
-            this.type = type;
             this.localMatrix = new engine.Matrix();
             this.globalMatrix = new engine.Matrix();
+            this.eventArray = new Array();
+            this.type = type;
         }
-        // 模板方法模式        
         DisplayObject.prototype.update = function () {
             this.localMatrix.updateFromDisplayObject(this.x, this.y, this.scaleX, this.scaleY, this.rotation);
             if (this.parent) {
@@ -176,6 +317,11 @@ var engine;
                 this.globalAlpha = this.alpha;
             }
         };
+        DisplayObject.prototype.addEventListener = function (eventType, func, target, ifCapture) {
+            //if this.eventArray doesn't contain e
+            var e = new MyEvent(eventType, func, target, ifCapture);
+            this.eventArray.push(e);
+        };
         return DisplayObject;
     }());
     engine.DisplayObject = DisplayObject;
@@ -185,16 +331,21 @@ var engine;
             return _super.call(this, "Bitmap") || this;
         }
         Bitmap.prototype.hitTest = function (x, y) {
-            console.log(x, y);
-            var rect = new engine.Rectangle();
-            rect.x = rect.y = 0;
-            rect.width = this.image.width;
-            rect.height = this.image.height;
-            if (rect.isPointInRectangle(new engine.Point(x, y))) {
-                return this;
-            }
-            else {
-                return null;
+            if (this.texture) {
+                if (this.texture.bitmapData) {
+                    var rect = new engine.Rectangle();
+                    rect.x = rect.y = 0;
+                    rect.width = this.texture.bitmapData.width;
+                    rect.height = this.texture.bitmapData.height;
+                    if (rect.isPointInRectangle(new engine.Point(x, y))) {
+                        var eventManager = EventManager.getInstance();
+                        eventManager.targetArray.push(this);
+                        return this;
+                    }
+                    else {
+                        return null;
+                    }
+                }
             }
         };
         return Bitmap;
@@ -212,13 +363,17 @@ var engine;
         function TextField() {
             var _this = _super.call(this, "TextField") || this;
             _this.text = "";
+            _this._measureTextWidth = 0;
             return _this;
         }
         TextField.prototype.hitTest = function (x, y) {
             var rect = new engine.Rectangle();
+            rect.width = this._measureTextWidth;
             rect.height = 20;
             var point = new engine.Point(x, y);
             if (rect.isPointInRectangle(point)) {
+                var eventManager = EventManager.getInstance();
+                eventManager.targetArray.push(this);
                 return this;
             }
             else {
@@ -238,13 +393,25 @@ var engine;
         DisplayObjectContainer.prototype.update = function () {
             _super.prototype.update.call(this);
             for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
-                var drawable = _a[_i];
-                drawable.update();
+                var displayobject = _a[_i];
+                displayobject.update();
             }
         };
         DisplayObjectContainer.prototype.addChild = function (child) {
-            this.children.push(child);
-            child.parent = this;
+            var x = this.children.indexOf(child);
+            if (x < 0) {
+                this.children.push(child);
+                child.parent = this;
+            }
+            else {
+                //如需遮罩，则需在此处将已有子物体移至第一位
+            }
+        };
+        DisplayObjectContainer.prototype.removeChild = function (child) {
+            var x = this.children.indexOf(child);
+            if (x >= 0) {
+                this.children.splice(x, 1);
+            }
         };
         DisplayObjectContainer.prototype.hitTest = function (x, y) {
             for (var i = this.children.length - 1; i >= 0; i--) {
@@ -254,6 +421,8 @@ var engine;
                 var pointBaseOnChild = engine.pointAppendMatrix(point, invertChildLocalMatrix);
                 var hitTestResult = child.hitTest(pointBaseOnChild.x, pointBaseOnChild.y);
                 if (hitTestResult) {
+                    var eventManager = EventManager.getInstance();
+                    eventManager.targetArray.push(this);
                     return hitTestResult;
                 }
             }
@@ -303,8 +472,9 @@ var engine;
     engine.run = function (canvas) {
         var stage = new engine.DisplayObjectContainer();
         var context2D = canvas.getContext("2d");
+        var render = new CanvasRenderer(stage, context2D);
+        engine.Resourse.getInstance().initial();
         var lastNow = Date.now();
-        var renderer = new CanvasRenderer(stage, context2D);
         var frameHandler = function () {
             var now = Date.now();
             var deltaTime = now - lastNow;
@@ -312,14 +482,78 @@ var engine;
             context2D.clearRect(0, 0, 400, 400);
             context2D.save();
             stage.update();
-            renderer.render();
+            render.render();
             context2D.restore();
             lastNow = now;
             window.requestAnimationFrame(frameHandler);
         };
         window.requestAnimationFrame(frameHandler);
-        window.onmousedown = function () {
-            // stage.hitTest(100, 100);
+        var hitResult;
+        var currentX;
+        var currentY;
+        var lastX;
+        var lastY;
+        var isMouseDown = false;
+        window.onmousedown = function (e) {
+            isMouseDown = true;
+            var targetArray = engine.EventManager.getInstance().targetArray;
+            targetArray.splice(0, targetArray.length);
+            hitResult = stage.hitTest(e.offsetX, e.offsetY);
+            currentX = e.offsetX;
+            currentY = e.offsetY;
+        };
+        window.onmousemove = function (e) {
+            var targetArray = engine.EventManager.getInstance().targetArray;
+            lastX = currentX;
+            lastY = currentY;
+            currentX = e.offsetX;
+            currentY = e.offsetY;
+            if (isMouseDown) {
+                for (var i = 0; i < targetArray.length; i++) {
+                    for (var _i = 0, _a = targetArray[i].eventArray; _i < _a.length; _i++) {
+                        var x = _a[_i];
+                        if (x.eventType.match("onmousemove") &&
+                            x.ifCapture == true) {
+                            x.func(e);
+                        }
+                    }
+                }
+                for (var i = targetArray.length - 1; i >= 0; i--) {
+                    for (var _b = 0, _c = targetArray[i].eventArray; _b < _c.length; _b++) {
+                        var x = _c[_b];
+                        if (x.eventType.match("onmousemove") &&
+                            x.ifCapture == false) {
+                            x.func(e);
+                        }
+                    }
+                }
+            }
+        };
+        window.onmouseup = function (e) {
+            isMouseDown = false;
+            var targetArray = engine.EventManager.getInstance().targetArray;
+            targetArray.splice(0, targetArray.length);
+            var newHitRusult = stage.hitTest(e.offsetX, e.offsetY);
+            for (var i = 0; i < targetArray.length; i++) {
+                for (var _i = 0, _a = targetArray[i].eventArray; _i < _a.length; _i++) {
+                    var x = _a[_i];
+                    if (x.eventType.match("onclick") &&
+                        newHitRusult == hitResult &&
+                        x.ifCapture == true) {
+                        x.func(e);
+                    }
+                }
+            }
+            for (var i = targetArray.length - 1; i >= 0; i--) {
+                for (var _b = 0, _c = targetArray[i].eventArray; _b < _c.length; _b++) {
+                    var x = _c[_b];
+                    if (x.eventType.match("onclick") &&
+                        newHitRusult == hitResult &&
+                        x.ifCapture == false) {
+                        x.func(e);
+                    }
+                }
+            }
         };
         return stage;
     };
@@ -340,7 +574,7 @@ var engine;
                 context2D.globalAlpha = child.globalAlpha;
                 var m = child.globalMatrix;
                 context2D.setTransform(m.a, m.b, m.c, m.d, m.tx, m.ty);
-                if (child instanceof engine.Bitmap) {
+                if (child.type == "Bitmap") {
                     this.renderBitmap(child);
                 }
                 else if (child.type == "TextField") {
@@ -352,9 +586,38 @@ var engine;
             }
         };
         CanvasRenderer.prototype.renderBitmap = function (bitmap) {
-            this.context2D.drawImage(bitmap.image, 0, 0);
+            var _this = this;
+            //  if (bitmap.imageCache == null) {
+            //     let img = new Image();
+            //     img.src = bitmap.texture;
+            //     img.onload = () => {
+            //         this.context2D.drawImage(img, 0, 0);
+            //         bitmap.imageCache = img;
+            //     }
+            // } else {
+            //     bitmap.imageCache.src=bitmap.texture;
+            //     this.context2D.drawImage(bitmap.imageCache, 0, 0);
+            // }
+            if (bitmap.texture != null) {
+                if (bitmap.texture.bitmapData == null) {
+                    var img_1 = new Image();
+                    img_1.src = bitmap.texture.id;
+                    img_1.onload = function () {
+                        _this.context2D.drawImage(img_1, 0, 0);
+                        bitmap.texture.bitmapData = img_1;
+                    };
+                }
+                else {
+                    this.context2D.drawImage(bitmap.texture.bitmapData, 0, 0);
+                }
+            }
+            else {
+                console.log("no bitmap resource find");
+            }
         };
         CanvasRenderer.prototype.renderTextField = function (textField) {
+            this.context2D.fillText(textField.text, 0, 10);
+            textField._measureTextWidth = this.context2D.measureText(textField.text).width;
         };
         return CanvasRenderer;
     }());
