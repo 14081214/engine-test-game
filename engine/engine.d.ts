@@ -9,7 +9,7 @@ declare namespace engine {
         y: number;
         width: number;
         height: number;
-        isPointInRectangle(point: Point): boolean;
+        isPointInRectangle(x: number, y: number): boolean;
     }
     function pointAppendMatrix(point: Point, m: Matrix): Point;
     /**
@@ -31,93 +31,175 @@ declare namespace engine {
     }
 }
 declare namespace engine {
+    namespace RES {
+        interface Processor {
+            load(url: string, callback: Function): void;
+        }
+        class ImageProcessor implements Processor {
+            load(url: string, callback: (data: any) => void): void;
+        }
+        class TextProcessor implements Processor {
+            load(url: string, callback: (data: any) => void): void;
+        }
+        function mapTypeSelector(typeSelector: (url: string) => string): void;
+        function getRES(url: string, callback: (data: any) => void): any;
+        function loadConfig(preloadJson: any, callback: () => void): void;
+        function map(type: string, processor: Processor): void;
+    }
+}
+declare namespace engine {
     type Ticker_Listener_Type = (deltaTime: number) => void;
+    function setTimeout(func: Function, delayTime: number): void;
+    function setInterval(func: Function, delayTime: number): number;
+    function clearInterval(key: number): void;
     class Ticker {
         private static instance;
         static getInstance(): Ticker;
         listeners: Ticker_Listener_Type[];
-        register(listener: Ticker_Listener_Type): void;
-        unregister(listener: Ticker_Listener_Type): void;
+        register(listener: Ticker_Listener_Type): number;
+        unregister(input: Ticker_Listener_Type | number): void;
         notify(deltaTime: number): void;
     }
 }
-declare let imageJason: {
-    id: string;
-    width: number;
-    height: number;
-}[];
 declare namespace engine {
-    class ImageResource {
-        bitmapData: HTMLImageElement;
-        id: string;
-        width: number;
-        height: number;
-        constructor(id: string, width: number, height: number);
+    enum TouchEventsType {
+        MOUSEDOWN = 0,
+        MOUSEUP = 1,
+        CLICK = 2,
+        MOUSEMOVE = 3,
     }
-    class Resourse {
-        resourses: ImageResource[];
-        private static Res;
-        constructor();
-        static getInstance(): Resourse;
-        getRes(id: string): ImageResource;
-        initial(): void;
+    class TouchEventService {
+        private static instance;
+        private performerList;
+        static currentType: TouchEventsType;
+        static stageX: number;
+        static stageY: number;
+        static getInstance(): TouchEventService;
+        addPerformer(performer: DisplayObject): void;
+        clearList(): void;
+        toDo(): void;
+    }
+    class TouchEventData {
+        stageX: number;
+        stageY: number;
+        type: TouchEventsType;
+        func: Function;
+        obj: any;
+        capture: boolean;
+        priority: number;
+        constructor(type: TouchEventsType, func: Function, obj: any, capture?: boolean, priority?: number);
     }
 }
 declare namespace engine {
-    class EventManager {
-        targetArray: DisplayObject[];
-        static eventManager: EventManager;
-        constructor();
-        static getInstance(): EventManager;
-    }
-    class MyEvent {
-        eventType: string;
-        ifCapture: boolean;
-        target: DisplayObject;
-        func: Function;
-        constructor(eventType: string, func: Function, target: DisplayObject, ifCapture: boolean);
-    }
+    type MovieClipData = {
+        name: string;
+        frames: MovieClipFrameData[];
+    };
+    type MovieClipFrameData = {
+        "image": string;
+    };
     interface Drawable {
+        update(context2D: CanvasRenderingContext2D): any;
     }
     abstract class DisplayObject implements Drawable {
-        x: number;
-        y: number;
-        scaleX: number;
-        scaleY: number;
-        rotation: number;
+        type: string;
+        parent: DisplayObjectContainer;
         alpha: number;
         globalAlpha: number;
+        protected scaleX: number;
+        protected scaleY: number;
+        x: number;
+        y: number;
+        rotation: number;
         localMatrix: Matrix;
         globalMatrix: Matrix;
-        parent: DisplayObjectContainer;
+        listeners: TouchEventData[];
+        width: number;
+        height: number;
         touchEnabled: boolean;
-        type: string;
-        eventArray: MyEvent[];
+        normalWidth: number;
+        normalHeight: number;
         constructor(type: string);
+        ScaleX: any;
+        ScaleY: any;
         update(): void;
-        addEventListener(eventType: string, func: Function, target: DisplayObject, ifCapture: boolean): void;
+        addEventListener(type: TouchEventsType, touchFunction: Function, object: any, ifCapture?: boolean, priority?: number): void;
         abstract hitTest(x: number, y: number): DisplayObject;
     }
-    class Bitmap extends DisplayObject {
-        texture: ImageResource;
-        constructor();
-        hitTest(x: number, y: number): this;
-    }
-    class TextField extends DisplayObject {
-        text: string;
-        constructor();
-        _measureTextWidth: number;
-        hitTest(x: number, y: number): this;
-    }
     class DisplayObjectContainer extends DisplayObject {
-        children: DisplayObject[];
+        childArray: DisplayObject[];
         constructor();
         update(): void;
         addChild(child: DisplayObject): void;
         removeChild(child: DisplayObject): void;
-        hitTest(x: any, y: any): DisplayObject;
+        hitTest(x: number, y: number): DisplayObject;
+    }
+    class Stage extends engine.DisplayObjectContainer {
+        static stageX: number;
+        static stageY: number;
+        static instance: Stage;
+        static getInstance(): Stage;
+    }
+    class TextField extends DisplayObject {
+        text: string;
+        textColor: string;
+        size: number;
+        typeFace: string;
+        textType: string;
+        constructor();
+        hitTest(x: number, y: number): this;
+        setText(text: any): void;
+        setX(x: any): void;
+        setY(y: any): void;
+        setTextColor(color: any): void;
+        setSize(size: any): void;
+        setTypeFace(typeFace: any): void;
+    }
+    class Bitmap extends DisplayObject {
+        imageID: string;
+        protected _texture: Texture;
+        constructor();
+        texture: Texture;
+        hitTest(x: number, y: number): this;
+        setX(x: any): void;
+        setY(y: any): void;
+    }
+    class Shape extends DisplayObjectContainer {
+        graphics: Graphics;
+        constructor();
+    }
+    class Graphics extends DisplayObjectContainer {
+        fillColor: string;
+        alpha: number;
+        globalAlpha: number;
+        strokeColor: string;
+        lineWidth: number;
+        lineColor: string;
+        constructor();
+        beginFill(color: any, alpha: any): void;
+        endFill(): void;
+        drawRect(x1: any, y1: any, x2: any, y2: any, context2D: CanvasRenderingContext2D): void;
+        drawCircle(x: any, y: any, rad: any, context2D: CanvasRenderingContext2D): void;
+        drawArc(x: any, y: any, rad: any, beginAngle: any, endAngle: any, context2D: CanvasRenderingContext2D): void;
+    }
+    class MovieClip extends Bitmap {
+        private advancedTime;
+        private static FRAME_TIME;
+        private static TOTAL_FRAME;
+        private currentFrameIndex;
+        private data;
+        constructor(data: MovieClipData);
+        ticker: (deltaTime: any) => void;
+        play(): void;
+        stop(): void;
+        setMovieClipData(data: MovieClipData): void;
+    }
+    class Texture {
+        data: HTMLImageElement;
+        width: number;
+        height: number;
     }
 }
 declare namespace engine {
-    let run: (canvas: HTMLCanvasElement) => DisplayObjectContainer;
+    let run: (canvas: HTMLCanvasElement) => Stage;
 }

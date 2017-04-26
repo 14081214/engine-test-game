@@ -1,44 +1,34 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+"use strict";
 var engine;
 (function (engine) {
-    var Point = (function () {
-        function Point(x, y) {
+    class Point {
+        constructor(x, y) {
             this.x = x;
             this.y = y;
         }
-        return Point;
-    }());
+    }
     engine.Point = Point;
-    var Rectangle = (function () {
-        function Rectangle() {
+    class Rectangle {
+        constructor() {
             this.x = 0;
             this.y = 0;
             this.width = 1;
             this.height = 1;
         }
-        Rectangle.prototype.isPointInRectangle = function (point) {
+        isPointInRectangle(x, y) {
+            var point = new Point(x, y);
             var rect = this;
-            if (point.x < rect.width + rect.x &&
-                point.y < rect.height + rect.y &&
+            if (point.x < rect.x + rect.width &&
                 point.x > rect.x &&
+                point.y < rect.y + rect.height &&
                 point.y > rect.y) {
                 return true;
             }
             else {
                 return false;
             }
-        };
-        return Rectangle;
-    }());
+        }
+    }
     engine.Rectangle = Rectangle;
     function pointAppendMatrix(point, m) {
         var x = m.a * point.x + m.c * point.y + m.tx;
@@ -88,25 +78,46 @@ var engine;
     var PacPI = PI + HalfPI;
     var TwoPI = PI * 2;
     var DEG_TO_RAD = Math.PI / 180;
-    var Matrix = (function () {
-        function Matrix(a, b, c, d, tx, ty) {
-            if (a === void 0) { a = 1; }
-            if (b === void 0) { b = 0; }
-            if (c === void 0) { c = 0; }
-            if (d === void 0) { d = 1; }
-            if (tx === void 0) { tx = 0; }
-            if (ty === void 0) { ty = 0; }
-            this.a = a;
-            this.b = b;
-            this.c = c;
-            this.d = d;
-            this.tx = tx;
-            this.ty = ty;
+    class Matrix {
+        // constructor() {
+        //     //a: number = 1, b: number = 0, c: number = 0, d: number = 1, tx: number = 0, ty: number = 0
+        //     this.a = 1;
+        //     this.b = 0;
+        //     this.c = 0;
+        //     this.d = 1;
+        //     this.tx = 0;
+        //     this.ty = 0;
+        // }
+        constructor(a, b, c, d, tx, ty) {
+            if (a != null)
+                this.a = a;
+            else
+                this.a = 1;
+            if (b != null)
+                this.b = b;
+            else
+                this.b = 0;
+            if (c != null)
+                this.c = c;
+            else
+                this.c = 0;
+            if (d != null)
+                this.d = d;
+            else
+                this.d = 1;
+            if (tx != null)
+                this.tx = tx;
+            else
+                this.tx = 0;
+            if (ty != null)
+                this.ty = ty;
+            else
+                this.ty = 0;
         }
-        Matrix.prototype.toString = function () {
+        toString() {
             return "(a=" + this.a + ", b=" + this.b + ", c=" + this.c + ", d=" + this.d + ", tx=" + this.tx + ", ty=" + this.ty + ")";
-        };
-        Matrix.prototype.updateFromDisplayObject = function (x, y, scaleX, scaleY, rotation) {
+        }
+        updateFromDisplayObject(x, y, scaleX, scaleY, rotation) {
             this.tx = x;
             this.ty = y;
             var skewX, skewY;
@@ -117,462 +128,762 @@ var engine;
             this.b = Math.sin(skewY) * scaleX;
             this.c = -v * scaleY;
             this.d = u * scaleY;
-        };
-        return Matrix;
-    }());
+        }
+    }
     engine.Matrix = Matrix;
 })(engine || (engine = {}));
+"use strict";
 var engine;
 (function (engine) {
-    var Ticker = (function () {
-        function Ticker() {
+    var RES;
+    (function (RES) {
+        var RESOURCE_PATH = "./Resources/";
+        class ImageProcessor {
+            load(url, callback) {
+                var data = document.createElement("img");
+                data.src = RESOURCE_PATH + url;
+                data.onload = () => {
+                    callback(data);
+                };
+                // let image = document.createElement("img");
+                // image.src = url;
+                // image.onload = () => {
+                //     callback();
+                // }
+                // return new Promise(function (resolve, reject) {
+                //     var result = document.createElement("img");
+                //     result.src = RESOURCE_PATH + url;
+                //     result.onload = () => {
+                //         resolve(result);
+                //         callback(result);
+                //     }
+                // });
+            }
+        }
+        RES.ImageProcessor = ImageProcessor;
+        class TextProcessor {
+            load(url, callback) {
+                var xhr = new XMLHttpRequest();
+                // xhr.open("get", RESOURCE_PATH + url);
+                // xhr.send();
+                // xhr.onload = () => {
+                xhr.open('GET', RESOURCE_PATH + url, true);
+                xhr.send();
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                            var obj = eval('(' + xhr.responseText + ')');
+                            callback(obj);
+                            // return obj;
+                        }
+                        else {
+                            console.error(xhr.statusText);
+                        }
+                    }
+                    // };
+                    xhr.onerror = function (e) {
+                        console.error(xhr.statusText);
+                    };
+                };
+            }
+        }
+        RES.TextProcessor = TextProcessor;
+        function mapTypeSelector(typeSelector) {
+            getTypeByURL = typeSelector;
+        }
+        RES.mapTypeSelector = mapTypeSelector;
+        var cache = {};
+        function getRES(url, callback) {
+            // if(cache[url] == null || 
+            // ( getTypeByURL(url) == "image" && 
+            //   cache[url].data == null) ){
+            let type = getTypeByURL(url);
+            if (cache[url] == null) {
+                let processor = createProcessor(type);
+                if (processor != null) {
+                    processor.load(url, (data) => {
+                        if (type == "image") {
+                            var texture = new engine.Texture();
+                            texture.data = data;
+                            texture.width = data.width;
+                            texture.height = data.height;
+                            cache[url] = texture;
+                            callback(texture);
+                        }
+                        else {
+                            cache[url] = data;
+                            callback(data);
+                        }
+                        if (cache[url] == null)
+                            console.log(url + "文件不存在！");
+                        //console.log(type + "还没读取");
+                        return cache[url];
+                    });
+                }
+            }
+            else {
+                callback(cache[url]);
+                //console.log(type + "读取完了");
+                return cache[url];
+            }
+        }
+        RES.getRES = getRES;
+        function loadConfig(preloadJson, callback) {
+            preloadJson.resources.forEach((config) => {
+                if (config.type == "image") {
+                    var preloadResource = new engine.Texture();
+                    preloadResource.width = config.width;
+                    preloadResource.height = config.height;
+                    let processor = createProcessor("image");
+                    if (processor != null) {
+                        processor.load(config.url, (data) => {
+                            preloadResource.data = data;
+                        });
+                    }
+                }
+                cache[config.url] = preloadResource;
+            });
+            callback();
+        }
+        RES.loadConfig = loadConfig;
+        function get(url) {
+            return cache[url];
+        }
+        var getTypeByURL = (url) => {
+            if (url.indexOf(".jpg") >= 0 || url.indexOf(".png") >= 0) {
+                return "image";
+            }
+            else if (url.indexOf(".mp3") >= 0) {
+                return "sound";
+            }
+            else if (url.indexOf(".json") >= 0) {
+                return "text";
+            }
+        };
+        let hashMap = {
+            "image": new ImageProcessor(),
+            "text": new TextProcessor()
+        };
+        function createProcessor(type) {
+            let processor = hashMap[type];
+            return processor;
+        }
+        function map(type, processor) {
+            hashMap[type] = processor;
+        }
+        RES.map = map;
+        // export function getRes(path: string) {
+        //     return new Promise(function (resolve, reject) {
+        //         var result = new Image();
+        //         result.src = RESOURCE_PATH + path;
+        //         result.onload = () => {
+        //             resolve(result);
+        //         }
+        //     });
+        //     // var result = new Image();
+        //     // result.src = path;
+        //     // result.onload = () => {
+        //     //         return(result);
+        //     // }
+        // }
+    })(RES = engine.RES || (engine.RES = {}));
+})(engine || (engine = {}));
+"use strict";
+var engine;
+(function (engine) {
+    function setTimeout(func, delayTime) {
+        var ticker = Ticker.getInstance();
+        var passedTime = 0;
+        var delayFunc = (delta) => {
+            passedTime += delta;
+            if (passedTime >= delayTime) {
+                func();
+                ticker.unregister(delayFunc);
+            }
+        };
+        ticker.register(delayFunc);
+    }
+    engine.setTimeout = setTimeout;
+    function setInterval(func, delayTime) {
+        var passedTime = 0;
+        var ticker = Ticker.getInstance();
+        var delayFunc = (delta) => {
+            passedTime += delta;
+            if (passedTime >= delayTime) {
+                func();
+                passedTime -= delayTime;
+            }
+        };
+        return ticker.register(delayFunc);
+    }
+    engine.setInterval = setInterval;
+    function clearInterval(key) {
+        Ticker.getInstance().unregister(key);
+    }
+    engine.clearInterval = clearInterval;
+    class Ticker {
+        constructor() {
             this.listeners = [];
         }
-        Ticker.getInstance = function () {
+        static getInstance() {
             if (!Ticker.instance) {
                 Ticker.instance = new Ticker();
             }
             return Ticker.instance;
-        };
-        Ticker.prototype.register = function (listener) {
-            var x = this.listeners.indexOf(listener);
-            if (x < 0) {
-                this.listeners.push(listener);
+        }
+        register(listener) {
+            this.listeners.push(listener);
+            return this.listeners.indexOf(listener);
+        }
+        unregister(input) {
+            if (input instanceof Number) {
+                this.listeners.splice(input, 1);
             }
             else {
-                console.log("already listen");
+                var index = this.listeners.indexOf(input);
+                this.listeners.splice(index, 1);
             }
-        };
-        Ticker.prototype.unregister = function (listener) {
-            var x = this.listeners.indexOf(listener);
-            if (x >= 0) {
-                this.listeners.splice(x, 1);
-            }
-            else {
-                console.log("no listener");
-            }
-        };
-        Ticker.prototype.notify = function (deltaTime) {
-            for (var _i = 0, _a = this.listeners; _i < _a.length; _i++) {
-                var listener = _a[_i];
+        }
+        notify(deltaTime) {
+            for (let listener of this.listeners) {
                 listener(deltaTime);
             }
-        };
-        return Ticker;
-    }());
+        }
+    }
     engine.Ticker = Ticker;
 })(engine || (engine = {}));
-var imageJason = [
-    { id: "ACCEPTABLE.png", width: 100, height: 100 },
-    { id: "buttonAccept.png", width: 100, height: 100 },
-    { id: "buttonFinish.png", width: 100, height: 100 },
-    { id: "CAN_SUBMIT.png", width: 100, height: 100 },
-    { id: "close.png", width: 100, height: 100 },
-    { id: "d1.png", width: 100, height: 100 },
-    { id: "d2.png", width: 100, height: 100 },
-    { id: "d3.png", width: 100, height: 100 },
-    { id: "d4.png", width: 100, height: 100 },
-    { id: "dialog.jpg", width: 100, height: 100 },
-    { id: "DURING.png", width: 100, height: 100 },
-    { id: "f1.png", width: 100, height: 100 },
-    { id: "f2.png", width: 100, height: 100 },
-    { id: "f3.png", width: 100, height: 100 },
-    { id: "f4.png", width: 100, height: 100 },
-    { id: "heroButton.png", width: 100, height: 100 },
-    { id: "heroDetails.jpg", width: 100, height: 100 },
-    { id: "i1.png", width: 100, height: 100 },
-    { id: "i2.png", width: 100, height: 100 },
-    { id: "i3.png", width: 100, height: 100 },
-    { id: "i4.png", width: 100, height: 100 },
-    { id: "i5.png", width: 100, height: 100 },
-    { id: "l1.png", width: 100, height: 100 },
-    { id: "l2.png", width: 100, height: 100 },
-    { id: "l3.png", width: 100, height: 100 },
-    { id: "l4.png", width: 100, height: 100 },
-    { id: "mask.png", width: 100, height: 100 },
-    { id: "monster.png", width: 100, height: 100 },
-    { id: "npc_0.png", width: 100, height: 100 },
-    { id: "npc_1.png", width: 100, height: 100 },
-    { id: "path.jpg", width: 100, height: 100 },
-    { id: "pig.png", width: 100, height: 100 },
-    { id: "r1.png", width: 100, height: 100 },
-    { id: "r2.png", width: 100, height: 100 },
-    { id: "r3.png", width: 100, height: 100 },
-    { id: "r4.png", width: 100, height: 100 },
-    { id: "taskButton.png", width: 100, height: 100 },
-    { id: "taskPanel.jpg", width: 100, height: 100 },
-    { id: "u1.png", width: 100, height: 100 },
-    { id: "u2.png", width: 100, height: 100 },
-    { id: "u3.png", width: 100, height: 100 },
-    { id: "u4.png", width: 100, height: 100 },
-    { id: "w1.jpg", width: 100, height: 100 },
-    { id: "w2.jpg", width: 100, height: 100 },
-    { id: "w3.jpg", width: 100, height: 100 },
-    { id: "w4.jpg", width: 100, height: 100 },
-    { id: "wall.jpg", width: 100, height: 100 },
-];
+"use strict";
 var engine;
 (function (engine) {
-    var ImageResource = (function () {
-        function ImageResource(id, width, height) {
-            this.id = id;
-            this.width = width;
-            this.height = height;
+    var TouchEventsType;
+    (function (TouchEventsType) {
+        TouchEventsType[TouchEventsType["MOUSEDOWN"] = 0] = "MOUSEDOWN";
+        TouchEventsType[TouchEventsType["MOUSEUP"] = 1] = "MOUSEUP";
+        TouchEventsType[TouchEventsType["CLICK"] = 2] = "CLICK";
+        TouchEventsType[TouchEventsType["MOUSEMOVE"] = 3] = "MOUSEMOVE";
+    })(TouchEventsType = engine.TouchEventsType || (engine.TouchEventsType = {}));
+    class TouchEventService {
+        constructor() {
+            this.performerList = [];
         }
-        return ImageResource;
-    }());
-    engine.ImageResource = ImageResource;
-    var Resourse = (function () {
-        function Resourse() {
-            ;
+        static getInstance() {
+            if (TouchEventService.instance == null) {
+                TouchEventService.instance = new TouchEventService();
+            }
+            return this.instance;
         }
-        Resourse.getInstance = function () {
-            if (Resourse.Res == null) {
-                Resourse.Res = new Resourse();
-                Resourse.Res.resourses = new Array();
-                return Resourse.Res;
-            }
-            else {
-                return Resourse.Res;
-            }
-        };
-        Resourse.prototype.getRes = function (id) {
-            if (id.match("null")) {
-                console.log("not find " + id + " in imageJason"); //此处可替换为“若没有该id，则添加至resource数组”
-                return null;
-            }
-            for (var i = 0; i < this.resourses.length; i++) {
-                if (this.resourses[i].id.match(id)) {
-                    return this.resourses[i];
+        addPerformer(performer) {
+            this.performerList.push(performer);
+        }
+        clearList() {
+            this.performerList.splice(0, this.performerList.length); //清空列表
+        }
+        toDo() {
+            //console.log(this.performerList);
+            for (var i = 0; i <= this.performerList.length - 1; i++) {
+                for (var listner of this.performerList[i].listeners) {
+                    if (listner.type == TouchEventService.currentType) {
+                        if (listner.capture) {
+                            listner.func();
+                            continue;
+                        }
+                    }
                 }
             }
-        };
-        Resourse.prototype.initial = function () {
-            var _this = this;
-            imageJason.forEach(function (x) {
-                var y = new ImageResource(x.id, x.width, x.height);
-                _this.resourses.push(y);
-            });
-        };
-        return Resourse;
-    }());
-    engine.Resourse = Resourse;
+            for (var i = this.performerList.length - 1; i >= 0; i--) {
+                for (var listner of this.performerList[i].listeners) {
+                    if (listner.type == TouchEventService.currentType) {
+                        if (!listner.capture) {
+                            //console.log("2");
+                            listner.func();
+                            continue;
+                        }
+                    }
+                }
+            }
+            this.clearList();
+        }
+    }
+    TouchEventService.stageX = -1;
+    TouchEventService.stageY = -1;
+    engine.TouchEventService = TouchEventService;
+    class TouchEventData {
+        constructor(type, func, obj, capture, priority) {
+            this.capture = false;
+            this.priority = 0;
+            this.stageX = TouchEventService.stageX;
+            this.stageY = TouchEventService.stageY;
+            this.type = type;
+            this.func = func;
+            this.obj = obj;
+            this.capture = capture || false;
+            this.priority = priority || 0;
+        }
+    }
+    engine.TouchEventData = TouchEventData;
 })(engine || (engine = {}));
+"use strict";
 var engine;
 (function (engine) {
-    var EventManager = (function () {
-        function EventManager() {
-        }
-        EventManager.getInstance = function () {
-            if (EventManager.eventManager == null) {
-                EventManager.eventManager = new EventManager();
-                EventManager.eventManager.targetArray = new Array();
-                return EventManager.eventManager;
-            }
-            else {
-                return EventManager.eventManager;
-            }
-        };
-        return EventManager;
-    }());
-    engine.EventManager = EventManager;
-    var MyEvent = (function () {
-        function MyEvent(eventType, func, target, ifCapture) {
-            this.eventType = "";
-            this.ifCapture = false;
-            this.eventType = eventType;
-            this.ifCapture = ifCapture;
-            this.func = func;
-            this.target = target;
-        }
-        return MyEvent;
-    }());
-    engine.MyEvent = MyEvent;
-    var DisplayObject = (function () {
-        function DisplayObject(type) {
-            this.x = 0;
-            this.y = 0;
-            this.scaleX = 1;
-            this.scaleY = 1;
-            this.rotation = 0;
+    class DisplayObject {
+        constructor(type) {
+            this.type = "DisplayObject";
             this.alpha = 1;
             this.globalAlpha = 1;
+            this.scaleX = 1;
+            this.scaleY = 1;
+            this.x = 0;
+            this.y = 0;
+            this.rotation = 0;
             this.localMatrix = new engine.Matrix();
             this.globalMatrix = new engine.Matrix();
-            this.eventArray = new Array();
+            this.listeners = [];
+            this.width = 0;
+            this.height = 0;
+            this.touchEnabled = true;
+            this.normalWidth = -1;
+            this.normalHeight = -1;
             this.type = type;
         }
-        DisplayObject.prototype.update = function () {
+        // set Width(width : number){
+        //     this.width = width;
+        // }
+        // set Height(height : number){
+        //     this.height = height;
+        // }
+        set ScaleX(scalex) {
+            this.scaleX = scalex;
+            this.width = this.width * this.scaleX;
+        }
+        set ScaleY(scaley) {
+            this.scaleY = scaley;
+            this.height = this.height * this.scaleY;
+        }
+        // get Width(){
+        //     return this.width;
+        // }
+        // get Height(){
+        //     return this.height;
+        // }
+        update() {
+            if (this.normalWidth > 0) {
+                this.scaleX = this.width / this.normalWidth;
+            }
+            if (this.normalHeight > 0) {
+                this.scaleY = this.height / this.normalHeight;
+            }
             this.localMatrix.updateFromDisplayObject(this.x, this.y, this.scaleX, this.scaleY, this.rotation);
             if (this.parent) {
+                this.globalAlpha = this.parent.globalAlpha * this.alpha;
                 this.globalMatrix = engine.matrixAppendMatrix(this.localMatrix, this.parent.globalMatrix);
             }
-            else {
+            if (this.parent == null) {
+                this.globalAlpha = this.alpha;
                 this.globalMatrix = this.localMatrix;
             }
-            if (this.parent) {
-                this.globalAlpha = this.parent.globalAlpha * this.alpha;
-            }
-            else {
-                this.globalAlpha = this.alpha;
-            }
-        };
-        DisplayObject.prototype.addEventListener = function (eventType, func, target, ifCapture) {
-            //if this.eventArray doesn't contain e
-            var e = new MyEvent(eventType, func, target, ifCapture);
-            this.eventArray.push(e);
-        };
-        return DisplayObject;
-    }());
+            // context2D.globalAlpha = this.globalAlpha;
+            // context2D.setTransform(this.globalMatrix.a,this.globalMatrix.b,this.globalMatrix.c,this.globalMatrix.d,this.globalMatrix.tx,this.globalMatrix.ty);
+            // this.render(context2D);
+        }
+        addEventListener(type, touchFunction, object, ifCapture, priority) {
+            var touchEvent = new engine.TouchEventData(type, touchFunction, object, ifCapture, priority);
+            this.listeners.push(touchEvent);
+        }
+    }
     engine.DisplayObject = DisplayObject;
-    var Bitmap = (function (_super) {
-        __extends(Bitmap, _super);
-        function Bitmap() {
-            return _super.call(this, "Bitmap") || this;
+    class DisplayObjectContainer extends DisplayObject {
+        constructor() {
+            super("DisplayObjectContainer");
+            this.childArray = [];
         }
-        Bitmap.prototype.hitTest = function (x, y) {
-            if (this.texture) {
-                if (this.texture.bitmapData) {
-                    var rect = new engine.Rectangle();
-                    rect.x = rect.y = 0;
-                    rect.width = this.texture.bitmapData.width;
-                    rect.height = this.texture.bitmapData.height;
-                    if (rect.isPointInRectangle(new engine.Point(x, y))) {
-                        var eventManager = EventManager.getInstance();
-                        eventManager.targetArray.push(this);
-                        return this;
-                    }
-                    else {
-                        return null;
-                    }
-                }
+        update() {
+            super.update();
+            for (let child of this.childArray) {
+                child.update();
             }
-        };
-        return Bitmap;
-    }(DisplayObject));
-    engine.Bitmap = Bitmap;
-    var fonts = {
-        "name": "Arial",
-        "font": {
-            "A": [0, 0, 0, 0, 1, 0, 0, 1, 1, 0],
-            "B": []
         }
-    };
-    var TextField = (function (_super) {
-        __extends(TextField, _super);
-        function TextField() {
-            var _this = _super.call(this, "TextField") || this;
-            _this.text = "";
-            _this._measureTextWidth = 0;
-            return _this;
+        addChild(child) {
+            this.childArray.push(child);
+            child.parent = this;
         }
-        TextField.prototype.hitTest = function (x, y) {
-            var rect = new engine.Rectangle();
-            rect.width = this._measureTextWidth;
-            rect.height = 20;
-            var point = new engine.Point(x, y);
-            if (rect.isPointInRectangle(point)) {
-                var eventManager = EventManager.getInstance();
-                eventManager.targetArray.push(this);
-                return this;
+        removeChild(child) {
+            console.log(child);
+            let index = this.childArray.indexOf(child);
+            if (index >= 0) {
+                this.childArray.splice(index, 1);
             }
             else {
+                console.log("child is not in the parent");
+            }
+        }
+        // render(context2D : CanvasRenderingContext2D){
+        //     for(let displayObject of this.childArray){
+        //         displayObject.draw(context2D);
+        //     }
+        // }
+        hitTest(x, y) {
+            if (this.touchEnabled) {
+                var rect = new engine.Rectangle();
+                rect.x = rect.y = 0;
+                rect.width = this.width;
+                rect.height = this.height;
+                var result = null;
+                if (rect.isPointInRectangle(x, y)) {
+                    result = this;
+                    engine.TouchEventService.getInstance().addPerformer(this); //从父到子把相关对象存入数组
+                    for (let i = this.childArray.length - 1; i >= 0; i--) {
+                        var child = this.childArray[i];
+                        var point = new engine.Point(x, y);
+                        var invertChildenLocalMatirx = engine.invertMatrix(child.localMatrix);
+                        var pointBasedOnChild = engine.pointAppendMatrix(point, invertChildenLocalMatirx);
+                        var hitTestResult = child.hitTest(pointBasedOnChild.x, pointBasedOnChild.y);
+                        if (hitTestResult) {
+                            result = hitTestResult;
+                            break;
+                        }
+                    }
+                    return result;
+                }
                 return null;
             }
-        };
-        return TextField;
-    }(DisplayObject));
-    engine.TextField = TextField;
-    var DisplayObjectContainer = (function (_super) {
-        __extends(DisplayObjectContainer, _super);
-        function DisplayObjectContainer() {
-            var _this = _super.call(this, "DisplayObjectContainer") || this;
-            _this.children = [];
-            return _this;
         }
-        DisplayObjectContainer.prototype.update = function () {
-            _super.prototype.update.call(this);
-            for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
-                var displayobject = _a[_i];
-                displayobject.update();
-            }
-        };
-        DisplayObjectContainer.prototype.addChild = function (child) {
-            var x = this.children.indexOf(child);
-            if (x < 0) {
-                this.children.push(child);
-                child.parent = this;
-            }
-            else {
-                //如需遮罩，则需在此处将已有子物体移至第一位
-            }
-        };
-        DisplayObjectContainer.prototype.removeChild = function (child) {
-            var x = this.children.indexOf(child);
-            if (x >= 0) {
-                this.children.splice(x, 1);
-            }
-        };
-        DisplayObjectContainer.prototype.hitTest = function (x, y) {
-            for (var i = this.children.length - 1; i >= 0; i--) {
-                var child = this.children[i];
-                var point = new engine.Point(x, y);
-                var invertChildLocalMatrix = engine.invertMatrix(child.localMatrix);
-                var pointBaseOnChild = engine.pointAppendMatrix(point, invertChildLocalMatrix);
-                var hitTestResult = child.hitTest(pointBaseOnChild.x, pointBaseOnChild.y);
-                if (hitTestResult) {
-                    var eventManager = EventManager.getInstance();
-                    eventManager.targetArray.push(this);
-                    return hitTestResult;
-                }
-            }
-            return null;
-        };
-        return DisplayObjectContainer;
-    }(DisplayObject));
+    }
     engine.DisplayObjectContainer = DisplayObjectContainer;
-    var MovieClip = (function (_super) {
-        __extends(MovieClip, _super);
-        function MovieClip(data) {
-            var _this = _super.call(this) || this;
-            _this.advancedTime = 0;
-            _this.ticker = function (deltaTime) {
-                // this.removeChild();
-                _this.advancedTime += deltaTime;
-                if (_this.advancedTime >= MovieClip.FRAME_TIME * MovieClip.TOTAL_FRAME) {
-                    _this.advancedTime -= MovieClip.FRAME_TIME * MovieClip.TOTAL_FRAME;
-                }
-                _this.currentFrameIndex = Math.floor(_this.advancedTime / MovieClip.FRAME_TIME);
-                var data = _this.data;
-                var frameData = data.frames[_this.currentFrameIndex];
-                var url = frameData.image;
-            };
-            _this.setMovieClipData(data);
-            _this.play();
-            return _this;
+    class Stage extends engine.DisplayObjectContainer {
+        static getInstance() {
+            if (this.instance == null) {
+                Stage.instance = new Stage();
+            }
+            return Stage.instance;
         }
-        MovieClip.prototype.play = function () {
+    }
+    Stage.stageX = 0;
+    Stage.stageY = 0;
+    engine.Stage = Stage;
+    class TextField extends DisplayObject {
+        constructor() {
+            super("TextField");
+            this.text = "";
+            this.textColor = "#000000";
+            this.size = 18;
+            this.typeFace = "Arial";
+            this.textType = "18px Arial";
+        }
+        // render(context2D : CanvasRenderingContext2D){
+        //     context2D.fillStyle = this.textColor;
+        //     context2D.font = this.textType;
+        //     context2D.fillText(this.text,0,0 + this.size);
+        // }
+        hitTest(x, y) {
+            if (this.touchEnabled) {
+                var rect = new engine.Rectangle();
+                rect.x = rect.y = 0;
+                rect.width = this.size * this.text.length;
+                rect.height = this.size;
+                if (rect.isPointInRectangle(x, y)) {
+                    engine.TouchEventService.getInstance().addPerformer(this);
+                    return this;
+                }
+                else {
+                    return null;
+                }
+            }
+        }
+        setText(text) {
+            this.text = text;
+        }
+        setX(x) {
+            this.x = x;
+        }
+        setY(y) {
+            this.y = y;
+        }
+        setTextColor(color) {
+            this.textColor = color;
+        }
+        setSize(size) {
+            this.size = size;
+            this.textType = this.size.toString() + "px " + this.typeFace;
+        }
+        setTypeFace(typeFace) {
+            this.typeFace = typeFace;
+            this.textType = this.size.toString() + "px " + this.typeFace;
+        }
+    }
+    engine.TextField = TextField;
+    class Bitmap extends DisplayObject {
+        constructor() {
+            super("Bitmap");
+            this.imageID = "";
+            this._texture = new Texture();
+            // if (imageID) {
+            //     this.imageID = imageID;
+            //     this._texture = RES.getRES(imageID, (textureData) => {
+            //         this._texture = textureData;
+            //         this.width = textureData.width;
+            //         this.height = textureData.height;
+            //     });
+            // }
+            // this.texture = new Image();
+            // this.texture.src = this.imageID;
+            // this.texture.onload = () =>{
+            //     this.width = this.texture.width;
+            //     this.height = this.texture.height;
+            // }
+            // RES.getRes(imageID).then((value)=>{
+            //     this.texture = value;
+            //     this.setWidth(this.texture.width);
+            //     this.setHeight(this.texture.height);
+            //     this.normalWidth = this.texture.width;
+            //     this.normalHeight = this.texture.height;
+            //     // this.width = this.texture.width;
+            //     // this.height = this.texture.height;
+            //     // this.image = this.texture.data;
+            //     console.log("load complete "+value);
+            // console.log(this.width + " hi! " + this.height);
+            // })
+        }
+        set texture(data) {
+            this._texture = data;
+            if (this.width <= 0) {
+                this.width = data.width;
+            }
+            if (this.height <= 0) {
+                this.height = data.height;
+            }
+            this.normalWidth = data.width;
+            this.normalHeight = data.height;
+        }
+        get texture() {
+            return this._texture;
+        }
+        // render(context2D : CanvasRenderingContext2D){
+        //     if(this.texture){
+        //         this.normalWidth = this.texture.width;
+        //         this.normalHeight = this.texture.height;
+        //         context2D.drawImage(this.texture,0,0);
+        //     }
+        //     // else{
+        //     //     this.texture.onload = () =>{
+        //     //         context2D.drawImage(this.texture,0,0);
+        //     //     }
+        //     // }
+        // }
+        hitTest(x, y) {
+            if (this.touchEnabled) {
+                var rect = new engine.Rectangle();
+                rect.x = rect.y = 0;
+                rect.width = this.width;
+                rect.height = this.height;
+                if (rect.isPointInRectangle(x, y)) {
+                    engine.TouchEventService.getInstance().addPerformer(this);
+                    return this;
+                }
+                else {
+                    return null;
+                }
+            }
+        }
+        // setImage(text){
+        //     this.imageID = text;
+        // }
+        setX(x) {
+            this.x = x;
+        }
+        setY(y) {
+            this.y = y;
+        }
+    }
+    engine.Bitmap = Bitmap;
+    class Shape extends DisplayObjectContainer {
+        constructor() {
+            super();
+            this.graphics = new Graphics();
+        }
+    }
+    engine.Shape = Shape;
+    class Graphics extends DisplayObjectContainer {
+        constructor() {
+            super();
+            this.fillColor = "#000000";
+            this.alpha = 1;
+            this.globalAlpha = 1;
+            this.strokeColor = "#000000";
+            this.lineWidth = 1;
+            this.lineColor = "#000000";
+        }
+        beginFill(color, alpha) {
+            this.fillColor = color;
+            this.alpha = alpha;
+        }
+        endFill() {
+            this.fillColor = "#000000";
+            this.alpha = 1;
+        }
+        drawRect(x1, y1, x2, y2, context2D) {
+            context2D.globalAlpha = this.alpha;
+            context2D.fillStyle = this.fillColor;
+            context2D.fillRect(x1, y1, x2, y2);
+            context2D.fill();
+        }
+        drawCircle(x, y, rad, context2D) {
+            context2D.fillStyle = this.fillColor;
+            context2D.globalAlpha = this.alpha;
+            context2D.beginPath();
+            context2D.arc(x, y, rad, 0, Math.PI * 2, true);
+            context2D.closePath();
+            context2D.fill();
+        }
+        drawArc(x, y, rad, beginAngle, endAngle, context2D) {
+            context2D.strokeStyle = this.strokeColor;
+            context2D.globalAlpha = this.alpha;
+            context2D.beginPath();
+            context2D.arc(x, y, rad, beginAngle, endAngle, true);
+            context2D.closePath();
+            context2D.stroke();
+        }
+    }
+    engine.Graphics = Graphics;
+    class MovieClip extends Bitmap {
+        constructor(data) {
+            super();
+            this.advancedTime = 0;
+            this.ticker = (deltaTime) => {
+                // this.removeChild();
+                this.advancedTime += deltaTime;
+                if (this.advancedTime >= MovieClip.FRAME_TIME * MovieClip.TOTAL_FRAME) {
+                    this.advancedTime -= MovieClip.FRAME_TIME * MovieClip.TOTAL_FRAME;
+                }
+                this.currentFrameIndex = Math.floor(this.advancedTime / MovieClip.FRAME_TIME);
+                let data = this.data;
+                let frameData = data.frames[this.currentFrameIndex];
+                let url = frameData.image;
+            };
+            this.setMovieClipData(data);
+            this.play();
+        }
+        play() {
             engine.Ticker.getInstance().register(this.ticker);
-        };
-        MovieClip.prototype.stop = function () {
+        }
+        stop() {
             engine.Ticker.getInstance().unregister(this.ticker);
-        };
-        MovieClip.prototype.setMovieClipData = function (data) {
+        }
+        setMovieClipData(data) {
             this.data = data;
             this.currentFrameIndex = 0;
             // 创建 / 更新 
-        };
-        return MovieClip;
-    }(Bitmap));
+        }
+    }
     MovieClip.FRAME_TIME = 20;
     MovieClip.TOTAL_FRAME = 10;
+    engine.MovieClip = MovieClip;
+    class Texture {
+    }
+    engine.Texture = Texture;
 })(engine || (engine = {}));
+"use strict";
 var engine;
 (function (engine) {
-    engine.run = function (canvas) {
-        var stage = new engine.DisplayObjectContainer();
-        var context2D = canvas.getContext("2d");
-        var render = new CanvasRenderer(stage, context2D);
-        engine.Resourse.getInstance().initial();
-        var lastNow = Date.now();
-        var frameHandler = function () {
-            var now = Date.now();
-            var deltaTime = now - lastNow;
+    engine.run = (canvas) => {
+        var stage = engine.Stage.getInstance();
+        stage.width = canvas.width;
+        stage.height = canvas.height;
+        let context2D = canvas.getContext("2d");
+        let renderer = new CanvasRenderer(stage, context2D);
+        var currentTarget; //鼠标点击时当前的对象
+        var startTarget; //mouseDown时的对象
+        var isMouseDown = false;
+        var startPoint = new engine.Point(-1, -1);
+        var movingPoint = new engine.Point(0, 0);
+        // var xhr = new XMLHttpRequest();
+        // xhr.open("get", "./Resources/RES.json");
+        // xhr.send();
+        // xhr.onload = () => {};
+        // var resoucesJson = RES.getRES("RES.json",(data) => {
+        //     resoucesJson = data;
+        //     RES.loadConfig(resoucesJson,()=>{console.log("Load Complete")});
+        // });
+        let lastNow = Date.now();
+        let frameHandler = () => {
+            let now = Date.now();
+            let deltaTime = now - lastNow;
             engine.Ticker.getInstance().notify(deltaTime);
-            context2D.clearRect(0, 0, 400, 400);
+            context2D.clearRect(0, 0, stage.width, stage.height);
             context2D.save();
             stage.update();
-            render.render();
+            renderer.render();
             context2D.restore();
             lastNow = now;
             window.requestAnimationFrame(frameHandler);
         };
         window.requestAnimationFrame(frameHandler);
-        var hitResult;
-        var currentX;
-        var currentY;
-        var lastX;
-        var lastY;
-        var isMouseDown = false;
-        window.onmousedown = function (e) {
+        window.onmousedown = (e) => {
+            let x = e.offsetX - 3;
+            let y = e.offsetY - 3;
+            engine.TouchEventService.stageX = x;
+            engine.TouchEventService.stageY = y;
+            engine.Stage.stageX = engine.TouchEventService.stageX;
+            engine.Stage.stageY = engine.TouchEventService.stageY;
+            startPoint.x = x;
+            startPoint.y = y;
+            movingPoint.x = x;
+            movingPoint.y = y;
+            engine.TouchEventService.currentType = engine.TouchEventsType.MOUSEDOWN;
+            currentTarget = stage.hitTest(x, y);
+            startTarget = currentTarget;
+            engine.TouchEventService.getInstance().toDo();
             isMouseDown = true;
-            var targetArray = engine.EventManager.getInstance().targetArray;
-            targetArray.splice(0, targetArray.length);
-            hitResult = stage.hitTest(e.offsetX, e.offsetY);
-            currentX = e.offsetX;
-            currentY = e.offsetY;
         };
-        window.onmousemove = function (e) {
-            var targetArray = engine.EventManager.getInstance().targetArray;
-            lastX = currentX;
-            lastY = currentY;
-            currentX = e.offsetX;
-            currentY = e.offsetY;
-            if (isMouseDown) {
-                for (var i = 0; i < targetArray.length; i++) {
-                    for (var _i = 0, _a = targetArray[i].eventArray; _i < _a.length; _i++) {
-                        var x = _a[_i];
-                        if (x.eventType.match("onmousemove") &&
-                            x.ifCapture == true) {
-                            x.func(e);
-                        }
-                    }
-                }
-                for (var i = targetArray.length - 1; i >= 0; i--) {
-                    for (var _b = 0, _c = targetArray[i].eventArray; _b < _c.length; _b++) {
-                        var x = _c[_b];
-                        if (x.eventType.match("onmousemove") &&
-                            x.ifCapture == false) {
-                            x.func(e);
-                        }
-                    }
-                }
+        window.onmouseup = (e) => {
+            let x = e.offsetX - 3;
+            let y = e.offsetY - 3;
+            engine.TouchEventService.stageX = x;
+            engine.TouchEventService.stageY = y;
+            engine.Stage.stageX = engine.TouchEventService.stageX;
+            engine.Stage.stageY = engine.TouchEventService.stageY;
+            var target = stage.hitTest(x, y);
+            if (target == currentTarget) {
+                engine.TouchEventService.currentType = engine.TouchEventsType.CLICK;
             }
-        };
-        window.onmouseup = function (e) {
+            else {
+                engine.TouchEventService.currentType = engine.TouchEventsType.MOUSEUP;
+            }
+            engine.TouchEventService.getInstance().toDo();
+            currentTarget = null;
             isMouseDown = false;
-            var targetArray = engine.EventManager.getInstance().targetArray;
-            targetArray.splice(0, targetArray.length);
-            var newHitRusult = stage.hitTest(e.offsetX, e.offsetY);
-            for (var i = 0; i < targetArray.length; i++) {
-                for (var _i = 0, _a = targetArray[i].eventArray; _i < _a.length; _i++) {
-                    var x = _a[_i];
-                    if (x.eventType.match("onclick") &&
-                        newHitRusult == hitResult &&
-                        x.ifCapture == true) {
-                        x.func(e);
-                    }
-                }
-            }
-            for (var i = targetArray.length - 1; i >= 0; i--) {
-                for (var _b = 0, _c = targetArray[i].eventArray; _b < _c.length; _b++) {
-                    var x = _c[_b];
-                    if (x.eventType.match("onclick") &&
-                        newHitRusult == hitResult &&
-                        x.ifCapture == false) {
-                        x.func(e);
-                    }
-                }
+        };
+        window.onmousemove = (e) => {
+            if (isMouseDown) {
+                let x = e.offsetX - 3;
+                let y = e.offsetY - 3;
+                engine.TouchEventService.stageX = x;
+                engine.TouchEventService.stageY = y;
+                engine.Stage.stageX = engine.TouchEventService.stageX;
+                engine.Stage.stageY = engine.TouchEventService.stageY;
+                engine.TouchEventService.currentType = engine.TouchEventsType.MOUSEMOVE;
+                currentTarget = stage.hitTest(x, y);
+                engine.TouchEventService.getInstance().toDo();
+                movingPoint.x = x;
+                movingPoint.y = y;
             }
         };
         return stage;
     };
-    var CanvasRenderer = (function () {
-        function CanvasRenderer(stage, context2D) {
+    class CanvasRenderer {
+        constructor(stage, context2D) {
             this.stage = stage;
             this.context2D = context2D;
         }
-        CanvasRenderer.prototype.render = function () {
-            var stage = this.stage;
-            var context2D = this.context2D;
+        render() {
+            let stage = this.stage;
+            let context2D = this.context2D;
             this.renderContainer(stage);
-        };
-        CanvasRenderer.prototype.renderContainer = function (container) {
-            for (var _i = 0, _a = container.children; _i < _a.length; _i++) {
-                var child = _a[_i];
-                var context2D = this.context2D;
+        }
+        renderContainer(container) {
+            for (let child of container.childArray) {
+                let context2D = this.context2D;
                 context2D.globalAlpha = child.globalAlpha;
-                var m = child.globalMatrix;
+                let m = child.globalMatrix;
                 context2D.setTransform(m.a, m.b, m.c, m.d, m.tx, m.ty);
                 if (child.type == "Bitmap") {
                     this.renderBitmap(child);
@@ -584,41 +895,16 @@ var engine;
                     this.renderContainer(child);
                 }
             }
-        };
-        CanvasRenderer.prototype.renderBitmap = function (bitmap) {
-            var _this = this;
-            //  if (bitmap.imageCache == null) {
-            //     let img = new Image();
-            //     img.src = bitmap.texture;
-            //     img.onload = () => {
-            //         this.context2D.drawImage(img, 0, 0);
-            //         bitmap.imageCache = img;
-            //     }
-            // } else {
-            //     bitmap.imageCache.src=bitmap.texture;
-            //     this.context2D.drawImage(bitmap.imageCache, 0, 0);
-            // }
-            if (bitmap.texture != null) {
-                if (bitmap.texture.bitmapData == null) {
-                    var img_1 = new Image();
-                    img_1.src = bitmap.texture.id;
-                    img_1.onload = function () {
-                        _this.context2D.drawImage(img_1, 0, 0);
-                        bitmap.texture.bitmapData = img_1;
-                    };
-                }
-                else {
-                    this.context2D.drawImage(bitmap.texture.bitmapData, 0, 0);
-                }
+        }
+        renderBitmap(bitmap) {
+            if (bitmap.texture.data) {
+                this.context2D.drawImage(bitmap.texture.data, 0, 0);
             }
-            else {
-                console.log("no bitmap resource find");
-            }
-        };
-        CanvasRenderer.prototype.renderTextField = function (textField) {
-            this.context2D.fillText(textField.text, 0, 10);
-            textField._measureTextWidth = this.context2D.measureText(textField.text).width;
-        };
-        return CanvasRenderer;
-    }());
+        }
+        renderTextField(textField) {
+            this.context2D.fillStyle = textField.textColor;
+            this.context2D.font = textField.textType;
+            this.context2D.fillText(textField.text, 0, 0 + textField.size);
+        }
+    }
 })(engine || (engine = {}));
